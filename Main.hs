@@ -1,10 +1,21 @@
 module Main where
 
 import System.Random.Shuffle
-import Data.List
+import Control.Monad
 import Cards
+import Hands
+
+randomHand :: IO (Maybe Hand)
+randomHand = do 
+    shuffled <- shuffleM allCards
+    return . toHand . take 5 $ shuffled
+
+
+judgePoker :: Maybe Hand -> Maybe (PokerHand, Card)
+judgePoker = liftM pokerHand
 
 main :: IO ()
-main = do 
-    shuffled <- shuffleM allCards
-    print . sort . take 5 $ shuffled
+main = forM_ [1..500] $ \x -> do
+    hand <- randomHand
+    let res = judgePoker hand
+    putStrLn $ show (x::Integer) ++ "  " ++ show hand ++ " -> " ++ show res

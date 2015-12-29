@@ -2,6 +2,7 @@ module Hands
     ( Hand
     , toHand, fromHand
     , pokerHand
+    , PokerHand
     
     -- hint
     , straightHint
