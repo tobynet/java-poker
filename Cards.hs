@@ -4,6 +4,7 @@ module Cards
     , allCards
     , cardSuit
     , cardNumber
+    , cardStrength
     ) where
 
 -- | 4 types of card
@@ -108,4 +109,11 @@ cardSuit (Card _ card) = card
 -- 10
 cardNumber :: Card -> Int
 cardNumber (Card num _) = num
+
+-- | Stregnth of card
+-- 
+-- >>> cardStrength . head $ allCards
+-- 2
+cardStrength :: Card -> Int
+cardStrength (Card n _) = n
 
