@@ -191,6 +191,9 @@ flush x = do
 -- >>> fullHouse $ Hand (take 2 sameNum ++ take 3 sameNum')
 -- Just (FullHouse,C10)
 --
+-- >>> fullHouse $ Hand (take 3 sameNum ++ take 2 sameNum')
+-- Just (FullHouse,C9_)
+--
 -- >>> fullHouse $ Hand (take 2 sameNum ++ take 3 sameSuit)
 -- Nothing
 -- 
@@ -198,10 +201,10 @@ flush x = do
 -- Nothing
 fullHouse :: Hand -> Maybe (PokerHand, Card)
 fullHouse x = do
-    cs <- nOfKindHint 2 x
-    ds <- nOfKindHint 3 x
+    cs <- nOfKindHint 3 x
+    ds <- nOfKindHint 2 x
     guard (length cs == 1 && length ds == 1)
-    return (FullHouse, maximum . concat $ cs ++ ds )
+    return (FullHouse, last $ concat cs )
 
 -- | Detect FourOfAKind and return strongest Card
 --
