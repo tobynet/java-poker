@@ -152,8 +152,10 @@ printResult (ph, card) = putStrLn $ concat
 
 -- | print Tefuda
 printHand :: DiscardList -> Hand -> IO ()
-printHand dis hand = putStrLn $ 
-    "-- Hand : " ++ showChangeHand dis hand
+printHand dis hand = do
+    putStrLn "-- Hand : "
+    forM_ [0..4] $ \x ->
+        putStrLn $ "      " ++ showChangeHand dis hand x
 
 
 -- | Repeat y/n question
@@ -170,11 +172,23 @@ ynQuestion s yes no = do
 
 
 -- | Hand with Sutefuda to String
-showChangeHand :: DiscardList -> Hand -> String
-showChangeHand dis hand = let
+showChangeHand :: DiscardList -> Hand -> Int -> String
+showChangeHand dis hand row = let
     judge x = if x `elem` dis 
-              then " " ++ show x ++ " "
-              else "[" ++ show x ++ "]"
+              then
+                [ "        "
+                , "        "
+                , "  " ++ show x ++ "   "
+                , "        "
+                , "        "] !! row
+                
+              else
+                [ " -----+ "
+                , "|     | "
+                , "| " ++ show x ++ " | "
+                , "|     | "
+                , "+-----  "] !! row
+
     in concatMap judge (fromHand hand)
 
 
