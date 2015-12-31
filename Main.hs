@@ -3,7 +3,6 @@ module Main where
 import System.Random.Shuffle
 import Control.Monad
 import Control.Applicative
-import Data.List
 import Data.Char
 import Cards    -- Fuda
 import Hands    -- Tefuda
@@ -47,32 +46,53 @@ getHand deck = do
 getDiscardList :: Hand -> IO (Maybe DiscardList)
 getDiscardList h = do
     input <- getLine
-    return . Just . selectByIndexes (fromHand h) $ toIntList input
+    return $ do
+        xs <- toIntList input
+        selectByIndexes (fromHand h) xs
 
 -- | String to [Int] for parse user inputs
 -- 
 -- >>> toIntList "1234"
--- [1,2,3,4]
+-- Just [1,2,3,4]
+--
+-- >>> toIntList "4019"
+-- Just [4,0,1,9]
 --
 -- >>> toIntList "z4q01"
--- [4,1]
+-- Nothing
 --
 -- >>> toIntList ""
--- []
-toIntList :: String -> [Int]
-toIntList = map digitToInt . filter ((`isInfixOf` "12345") . (:[]))
+-- Just []
+toIntList :: String -> Maybe [Int]
+toIntList cs =
+    if isDigits cs
+    then Just $ toInts cs
+    else Nothing
+    where
+        isDigits :: String -> Bool
+        isDigits = all isDigit
+
+        toInts :: String -> [Int]
+        toInts = map digitToInt
 
 -- | Get cards by indexes
 --
 -- >>> selectByIndexes "12345" [1..3]
--- "123"
+-- Just "123"
 --
--- todo: > selectByIndexes "12345" [10]
--- "*** Exception: Prelude.(!!): index too large
+-- >>> selectByIndexes "12345" [10]
+-- Nothing
 --
-selectByIndexes :: [a] -> [Int] -> [a]
-selectByIndexes xs = map ((xs!!) . subtract 1)
+selectByIndexes :: [a] -> [Int] -> Maybe [a]
+selectByIndexes xs = 
+    mapM (atMay xs . subtract 1)
 
+    where
+        atMay :: [a] -> Int -> Maybe a
+        atMay ys i =
+            if (0 <= i) && (i < length xs)
+            then Just (ys !! i)
+            else Nothing
 
 randomHand :: IO (Maybe Hand)
 randomHand = do 
@@ -83,8 +103,78 @@ randomHand = do
 judgePoker :: Maybe Hand -> Maybe (PokerHand, Card)
 judgePoker = liftM pokerHand
 
+
 main :: IO ()
-main = forM_ [1..500] $ \x -> do
-    hand <- randomHand
-    let res = judgePoker hand
-    putStrLn $ show (x::Integer) ++ "  " ++ show hand ++ " -> " ++ show res
+main = do
+    putStrLn "             _       _   ___      _             "
+    putStrLn "   _ __ ___ (_)_ __ (_) / _ \\___ | | _____ _ __ "
+    putStrLn "  | '_ ` _ \\| | '_ \\| |/ /_)/ _ \\| |/ / _ \\ '__|"
+    putStrLn "  | | | | | | | | | | / ___/ (_) |   <  __/ |   "
+    putStrLn "  |_| |_| |_|_|_| |_|_\\/    \\___/|_|\\_\\___|_|   "
+    putStrLn "                                                "
+
+    deck <- shuffleM allCards
+    case getHand deck of
+        Nothing -> error "Unexpected error"
+        Just (hand, newDeck) -> playPoker hand newDeck
+    ynQuestion "-- replay?" main (putStrLn "-- bye.")
+
+
+-- | Play poker
+playPoker :: Hand -> Deck -> IO ()
+playPoker hand deck = do
+    discards <- inputDisuse hand
+    case drawHand deck discards hand of
+        Nothing -> error "Unexpected error"
+        Just (nhand, _) -> do
+            printHand [] nhand
+            printResult $ pokerHand nhand
+
+
+-- | Input suteru cards
+inputDisuse :: Hand -> IO DiscardList
+inputDisuse hand = do
+    printHand [] hand
+    putStrLn "-- Select discardable cards" 
+    gotDisuse <- getDiscardList hand
+    case gotDisuse of
+        Nothing -> do
+            putStrLn "-- Input 1 or .. 5" 
+            inputDisuse hand
+        Just disuses -> do
+            printHand disuses hand
+            ynQuestion "-- OK?" (return disuses) (inputDisuse hand)
+
+-- | print Yaku
+printResult :: (PokerHand, Card) -> IO ()
+printResult (ph, card) = putStrLn $ concat
+    ["***** Your hand is ", show ph, ", greatest card is ", show card, " *****"]
+
+-- | print Tefuda
+printHand :: DiscardList -> Hand -> IO ()
+printHand dis hand = putStrLn $ 
+    "-- Hand : " ++ showChangeHand dis hand
+
+
+-- | Repeat y/n question
+ynQuestion :: String -> IO a -> IO a -> IO a
+ynQuestion s yes no = do
+    putStrLn $ s ++ "(y/n)"
+    input <- getLine
+    case input of
+        "y" -> yes
+        "n" -> no
+        _ -> do
+            putStrLn "-- Input `y` or `n`"
+            ynQuestion s yes no
+
+
+-- | Hand with Sutefuda to String
+showChangeHand :: DiscardList -> Hand -> String
+showChangeHand dis hand = let
+    judge x = if x `elem` dis 
+              then " " ++ show x ++ " "
+              else "[" ++ show x ++ "]"
+    in concatMap judge (fromHand hand)
+
+
