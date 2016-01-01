@@ -3,7 +3,9 @@ module Main where
 import System.Random.Shuffle
 import Control.Monad
 import Control.Applicative
+import Data.List
 import Data.Char
+import Data.Maybe
 import Cards    -- Fuda
 import Hands    -- Tefuda
 
@@ -75,6 +77,7 @@ toIntList cs =
         toInts :: String -> [Int]
         toInts = map digitToInt
 
+
 -- | Get cards by indexes
 --
 -- >>> selectByIndexes "12345" [1..3]
@@ -94,47 +97,58 @@ selectByIndexes xs =
             then Just (ys !! i)
             else Nothing
 
-randomHand :: IO (Maybe Hand)
-randomHand = do 
-    shuffled <- shuffleM allCards
-    return . toHand . take 5 $ shuffled
-
-
-judgePoker :: Maybe Hand -> Maybe (PokerHand, Card)
-judgePoker = liftM pokerHand
-
 
 main :: IO ()
 main = do
-    putStrLn "             _       _   ___      _             "
-    putStrLn "   _ __ ___ (_)_ __ (_) / _ \\___ | | _____ _ __ "
-    putStrLn "  | '_ ` _ \\| | '_ \\| |/ /_)/ _ \\| |/ / _ \\ '__|"
-    putStrLn "  | | | | | | | | | | / ___/ (_) |   <  __/ |   "
-    putStrLn "  |_| |_| |_|_|_| |_|_\\/    \\___/|_|\\_\\___|_|   "
-    putStrLn "                                                "
+    -- Ogre font
+    putStrLn "     __                     ___      _             "
+    putStrLn "     \\ \\  __ ___   ____ _  / _ \\___ | | _____ _ __ "
+    putStrLn "      \\ \\/ _` \\ \\ / / _` |/ /_)/ _ \\| |/ / _ \\ '__|"
+    putStrLn "   /\\_/ / (_| |\\ V / (_| / ___/ (_) |   <  __/ |   "
+    putStrLn "   \\___/ \\__,_| \\_/ \\__,_\\/    \\___/|_|\\_\\___|_|   "
+    putStrLn "                                                   "
 
     deck <- shuffleM allCards
     case getHand deck of
         Nothing -> error "Unexpected error"
-        Just (hand, newDeck) -> playPoker hand newDeck
+        Just res -> matchPoker res
     ynQuestion "-- replay?" main (putStrLn "-- bye.")
 
 
+data Player = Player | Enemy deriving Eq
+
+showPlayerName :: Player -> String
+showPlayerName Player = "You"
+showPlayerName Enemy = "Java"
+
+matchPoker :: (Hand, Deck) -> IO ()
+matchPoker (mhand, deck) = do
+    (mres, ndeck, nmhand) <- playPoker mhand deck Player
+    case getHand ndeck of
+        Nothing -> error "Unexpected error"
+        Just (ehand, odeck) -> do
+            (eres, _,nehand) <- playPoker ehand odeck Enemy
+            printResult nmhand nehand mres eres
+
+
 -- | Play poker
-playPoker :: Hand -> Deck -> IO ()
-playPoker hand deck = do
-    discards <- inputDisuse hand
+playPoker :: Hand -> Deck -> Player -> IO ((PokerHand, Card), Deck, Hand)
+playPoker hand deck player = do
+    discards <- if player == Player
+        then inputDisuse hand
+        else aiDisuse hand
+
     case drawHand deck discards hand of
         Nothing -> error "Unexpected error"
-        Just (nhand, _) -> do
-            printHand [] nhand
-            printResult $ pokerHand nhand
+        Just (nhand, ndeck) -> do
+            let res = pokerHand nhand
+            return (res, ndeck, nhand)
 
 
 -- | Input suteru cards
 inputDisuse :: Hand -> IO DiscardList
 inputDisuse hand = do
-    printHand [] hand
+    printHand [] hand Player
     putStrLn "-- Select discardable cards" 
     gotDisuse <- getDiscardList hand
     case gotDisuse of
@@ -142,18 +156,39 @@ inputDisuse hand = do
             putStrLn "-- Input 1 or .. 5" 
             inputDisuse hand
         Just disuses -> do
-            printHand disuses hand
-            ynQuestion "-- OK?" (return disuses) (inputDisuse hand)
+            printHand disuses hand Player
+            ynQuestion "-- You: OK?" (return disuses) (inputDisuse hand)
+
+
+-- | aiDisuse :: Hand -> IO DiscardList
+aiDisuse :: Hand -> IO DiscardList
+aiDisuse hand = do
+    let res = aiSelectDiscards hand
+    printHand res hand Enemy
+    putStrLn "-- Java: OK!"
+    return res
+
 
 -- | print Yaku
-printResult :: (PokerHand, Card) -> IO ()
-printResult (ph, card) = putStrLn $ concat
-    ["***** Your hand is ", show ph, ", greatest card is ", show card, " *****"]
+printResult :: Hand -> Hand -> (PokerHand, Card) -> (PokerHand, Card) -> IO()
+printResult mhand ehand mres@(mph, mcard) eres@(eph, ecard) = do
+    putStrLn "***** Result *****"
+    printHand [] mhand Player
+    printHand [] ehand Enemy
+
+    putStrLn $ concat ["Your hand is ", show mph, ", greatest card is ", show mcard]
+    putStrLn $ concat ["Java's hand is ", show eph, ", greatest card is ", show ecard]
+
+    case judgeVictory mres eres of 
+        LT -> putStrLn "You lose!"
+        EQ -> putStrLn "It's a tie!"
+        GT -> putStrLn "You win!"
+
 
 -- | print Tefuda
-printHand :: DiscardList -> Hand -> IO ()
-printHand dis hand = do
-    putStrLn "-- Hand : "
+printHand :: DiscardList -> Hand -> Player -> IO ()
+printHand dis hand player = do
+    putStrLn $ "-- " ++ showPlayerName player ++ "'s Hand : "
     forM_ [0..4] $ \x ->
         putStrLn $ "      " ++ showChangeHand dis hand x
 
@@ -190,5 +225,54 @@ showChangeHand dis hand row = let
                 , "+-----  "] !! row
 
     in concatMap judge (fromHand hand)
+
+
+-- | Sutefuda = Hand - allYaku
+--
+-- >>> let Just (x) = toHand $ take 5 $ (filter (\x -> (cardNumber x == 10)) $ allCards) ++ allCards
+-- >>> fromHand x
+-- [H2_,H10,D10,C10,S10]
+-- >>> nOfKindDiscards x 
+-- [H2_]
+nOfKindDiscards :: Hand -> DiscardList
+nOfKindDiscards hand = fromHand hand \\ allNOfKinds hand
+    where
+        -- | all Yaku
+        --
+        -- >>> let Just (x) = toHand $ take 5 $ (filter (\x -> (cardNumber x == 10)) $ allCards) ++ allCards
+        -- >>> allNOfKinds x
+        -- [H10,D10,C10,S10]
+        allNOfKinds :: Hand -> [Card]
+        allNOfKinds h = concat . concat $ catMaybes [nOfKindHint 2 h, nOfKindHint 3 h, nOfKindHint 4 h]
+
+
+-- | Sutefuda by AI
+--
+-- >>> let Just straightFlush = toHand $ take 5 $ allCards
+-- >>> aiSelectDiscards straightFlush
+-- []
+--
+-- >>> let Just fourCard = toHand $ take 5 $ (filter ((==10) . cardNumber) allCards) ++ allCards
+-- >>> aiSelectDiscards fourCard
+-- [H2_]
+--
+-- >>> let Just buta = toHand $ take 5 $ (take 2 allCards) ++ (take 2 $ drop (13+5) allCards) ++ (drop (13*2+9) allCards)
+-- >>> aiSelectDiscards buta
+-- [H2_,H3_,D7_,D8_,CJ_]
+--
+aiSelectDiscards :: Hand -> DiscardList
+aiSelectDiscards hand =
+    fromMaybe (nOfKindDiscards hand)
+        ((straightHint hand <|> flushHint hand) *> Just [])
+
+
+-- | Judge victory you and AI
+--
+-- >>>
+judgeVictory :: (PokerHand, Card) -> (PokerHand, Card) -> Ordering
+judgeVictory l r = compare (pullStrength l) (pullStrength r)
+    where
+        pullStrength :: (PokerHand, Card) -> (PokerHand, Int)
+        pullStrength = fmap cardStrength
 
 
