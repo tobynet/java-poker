@@ -1,4 +1,4 @@
-module Hands
+module Game.Poker.Hands
     ( Hand
     , toHand, fromHand
     , pokerHand
@@ -26,7 +26,7 @@ import Data.Function
 import Data.Maybe
 import Control.Applicative
 import Control.Monad
-import Cards
+import Game.Poker.Cards
 
 -- | Constrained cards in hand
 --

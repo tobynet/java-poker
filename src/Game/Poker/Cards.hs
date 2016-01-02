@@ -1,4 +1,4 @@
-module Cards 
+module Game.Poker.Cards 
     ( Suit(..)
     , Card
     , allCards

@@ -1,4 +1,8 @@
-module Main where
+module Game.Poker
+    ( module Game.Poker.Hands
+    , module Game.Poker.Cards
+    , simpleGame
+    ) where
 
 import System.Random.Shuffle
 import Control.Monad
@@ -6,8 +10,8 @@ import Control.Applicative
 import Data.List
 import Data.Char
 import Data.Maybe
-import Cards    -- Fuda
-import Hands    -- Tefuda
+import Game.Poker.Cards    -- Fuda
+import Game.Poker.Hands    -- Tefuda
 
 type DiscardList = [Card]   -- Sutefuda
 type Deck = [Card]          -- Yamafuda
@@ -98,8 +102,8 @@ selectByIndexes xs =
             else Nothing
 
 
-main :: IO ()
-main = do
+simpleGame :: IO ()
+simpleGame = do
     -- Ogre font
     putStrLn "     __                     ___      _             "
     putStrLn "     \\ \\  __ ___   ____ _  / _ \\___ | | _____ _ __ "
@@ -112,7 +116,7 @@ main = do
     case getHand deck of
         Nothing -> error "Unexpected error"
         Just res -> matchPoker res
-    ynQuestion "-- replay?" main (putStrLn "-- bye.")
+    ynQuestion "-- replay?" simpleGame (putStrLn "-- bye.")
 
 
 data Player = Player | Enemy deriving Eq
@@ -179,10 +183,19 @@ printResult mhand ehand mres@(mph, mcard) eres@(eph, ecard) = do
     putStrLn $ concat ["Your hand is ", show mph, ", greatest card is ", show mcard]
     putStrLn $ concat ["Java's hand is ", show eph, ", greatest card is ", show ecard]
 
-    case judgeVictory mres eres of 
-        LT -> putStrLn "You lose!"
-        EQ -> putStrLn "It's a tie!"
-        GT -> putStrLn "You win!"
+    putStrLn $ concat 
+        [ "\n"
+        , "      +----------------------------+\n"
+        , "      ||                          ||\n"
+        , "      ||        " , winLossMessage, "       ||\n"
+        , "      ||                          ||\n"
+        , "      +----------------------------+\n" 
+        ]
+    where 
+        winLossMessage = case judgeVictory mres eres of 
+            LT -> " Java win! "
+            EQ -> "It's a tie!"
+            GT -> " You win!! "
 
 
 -- | print Tefuda
