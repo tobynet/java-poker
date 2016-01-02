@@ -4,6 +4,7 @@
 name:                java-poker
 version:             0.1.0.0
 synopsis:            The etude of the Haskell programming
+description:         poker like a JAVA
 -- description:         
 homepage:            https://github.com/arigato-java/
 license:             MIT
@@ -16,10 +17,19 @@ build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
 
+library
+  hs-source-dirs:      src
+  exposed-modules:     Game.Poker
+                     , Game.Poker.Hands
+                     , Game.Poker.Cards
+  build-depends:       base >=4.7 && <4.8
+                     , random-shuffle >=0.0 && <0.1
+  default-language:    Haskell2010
+
 executable java-poker
-  -- main-is:             
+  main-is:             Main.hs
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.7 && <4.8, random-shuffle >=0.0 && <0.1
-  hs-source-dirs:      src
+  build-depends:       base >=4.7 && <4.8, java-poker
+  hs-source-dirs:      app
   default-language:    Haskell2010
