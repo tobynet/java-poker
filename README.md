@@ -14,10 +14,24 @@
     $ cabal install random-shuffle
     ```
 
-## Todos
+## Install and try
 
-* todo: module化
-* todo: Web App化
-* todo: Deploy to PaaS
-* todo: 出力 using IO
+Use stack: 
+
+    $ stack update && stack install java-poker
+    $ hash -r
+    $ java-poker
+
+Or use cabal:
+
+    $ cabal update && cabal install java-poker
+    $ hash -r
+    $ java-poker
+
+Or use stack and build master branch in git: 
+
+    $ git clone https://github.com/tobynet/java-poker.git
+    $ cd java-poker
+    $ stack build && stack exec java-poker-simple
+
 
