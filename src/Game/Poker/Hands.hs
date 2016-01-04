@@ -10,7 +10,6 @@ module Game.Poker.Hands
     , nOfKindHint
 
     -- hand
-    , straightFlush
     , fourOfAKind
     , fullHouse
     , flush
@@ -18,10 +17,21 @@ module Game.Poker.Hands
     , threeOfAKind
     , twoPair
     , onePair
+
+    , DiscardList
+    , Deck
+    , drawHand
+    , getHand
+    , getDiscardList
+    , toIntList
+    , selectByIndexes
+    , straightFlush
+    , judgeVictory
     ) where
 
 
 import Data.List
+import Data.Char
 import Data.Function
 import Data.Maybe
 import Control.Applicative
@@ -64,6 +74,8 @@ data PokerHand
     | StraightFlush     -- Sugoi
     deriving (Show, Read, Eq, Ord, Enum)
 
+type DiscardList = [Card]   -- Sutefuda
+type Deck = [Card]          -- Yamafuda
 
 -- | Detect poker hand and return strength Card
 -- 
@@ -342,6 +354,101 @@ nOfKindHint n (Hand xs) =
 -- [(2,H2_),(3,H3_),(4,H4_),(5,H5_),(6,H6_)]
 extract :: (a -> b) -> [a] -> [(b, a)]
 extract f cs = [ (f c, c) | c <- cs ]
+
+
+-- | Draw cards to make new hand from Deck
+-- Return a new Hand and Deck if its possible.
+--
+-- >>> 
+drawHand :: Deck -> DiscardList -> Hand -> Maybe (Hand, Deck)
+drawHand deck dis h = let 
+    nl = filter (`notElem` dis) (fromHand h)
+    nr = drop (5 - length nl) deck
+    in (,) <$> toHand (take 5 $ nl ++ deck) <*> Just nr
+
+    -- in do
+    --     hand <- toHand . take 5 $ nl ++ deck
+    --     return (hand, nr)
+
+-- | Get hand from deck(Yamafuda)
+--
+-- >>> let Just (hand, newDeck) = getHand allCards
+-- >>> hand
+-- Hand {fromHand = [H2_,H3_,H4_,H5_,H6_]}
+-- 
+-- >>> let Just (_, newDeck') = getHand newDeck
+-- >>> take 8 newDeck'
+-- [HQ_,HK_,HA_,D2_,D3_,D4_,D5_,D6_]
+--
+-- >>> getHand allCards >>= return . snd >>= getHand >>= return . take 8 . snd
+-- Just [HQ_,HK_,HA_,D2_,D3_,D4_,D5_,D6_]
+getHand :: Deck -> Maybe (Hand, Deck)
+getHand deck = do
+    hand <- toHand . take 5 $ deck
+    return (hand, drop 5 deck)
+
+-- | Get discardList(Sutefuda) from hand
+getDiscardList :: Hand -> IO (Maybe DiscardList)
+getDiscardList h = do
+    input <- getLine
+    return $ do
+        xs <- toIntList input
+        selectByIndexes (fromHand h) xs
+
+-- | String to [Int] for parse user inputs
+-- 
+-- >>> toIntList "1234"
+-- Just [1,2,3,4]
+--
+-- >>> toIntList "4019"
+-- Just [4,0,1,9]
+--
+-- >>> toIntList "z4q01"
+-- Nothing
+--
+-- >>> toIntList ""
+-- Just []
+toIntList :: String -> Maybe [Int]
+toIntList cs =
+    if isDigits cs
+    then Just $ toInts cs
+    else Nothing
+    where
+        isDigits :: String -> Bool
+        isDigits = all isDigit
+
+        toInts :: String -> [Int]
+        toInts = map digitToInt
+
+
+-- | Get cards by indexes
+--
+-- >>> selectByIndexes "12345" [1..3]
+-- Just "123"
+--
+-- >>> selectByIndexes "12345" [10]
+-- Nothing
+--
+selectByIndexes :: [a] -> [Int] -> Maybe [a]
+selectByIndexes xs = 
+    mapM (atMay xs . subtract 1)
+
+    where
+        atMay :: [a] -> Int -> Maybe a
+        atMay ys i =
+            if (0 <= i) && (i < length xs)
+            then Just (ys !! i)
+            else Nothing
+
+
+-- | Judge victory you and AI
+--
+-- >>>
+judgeVictory :: (PokerHand, Card) -> (PokerHand, Card) -> Ordering
+judgeVictory l r = compare (pullStrength l) (pullStrength r)
+    where
+        pullStrength :: (PokerHand, Card) -> (PokerHand, Int)
+        pullStrength = fmap cardStrength
 
 
 
