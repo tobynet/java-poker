@@ -3,6 +3,9 @@
 * For `Syakyo`, refer to https://en.wikipedia.org/wiki/Sutra_copying
 * For `Poker in Haskell`, refer to http://tune.hateblo.jp/entry/2015/05/12/023112
 
+[![Build status](https://ci.appveyor.com/api/projects/status/drorc8em7adst8oq?svg=true)](https://ci.appveyor.com/project/tobynet/java-poker)
+
+
 ## Requirements
 
 * Haskell compiler(ghc 7.8.4 or lator)
