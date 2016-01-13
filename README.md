@@ -11,29 +11,30 @@
 
 ## Install and try
 
-Use stack: 
+Use [stack]: 
 
-    ```bash
-    $ stack update && stack install java-poker
-    $ hash -r
-    $ java-poker
-    ```
+```bash
+$ stack update && stack install java-poker
+$ hash -r
+$ java-poker
+```
 
-Or use cabal:
+Or use [cabal]:
 
-    ```bash
-    $ cabal update && cabal install java-poker
-    $ hash -r
-    $ java-poker
-    ```
+```bash
+$ cabal update && cabal install java-poker
+$ hash -r
+$ java-poker
+```
 
-Or use stack and build master branch in git: 
+Or use [stack] and build master branch in git: 
 
-    ```bash
-    $ git clone https://github.com/tobynet/java-poker.git
-    $ cd java-poker
-    $ stack build
-    $ stack exec java-poker
-    ```
+```bash
+$ git clone https://github.com/tobynet/java-poker.git
+$ cd java-poker
+$ stack build
+$ stack exec java-poker
+```
 
-
+[stack]: https://www.stackage.org/
+[cabal]: https://www.haskell.org/cabal/
