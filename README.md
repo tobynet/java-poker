@@ -5,33 +5,35 @@
 
 ## Requirements
 
-* Haskell compiler(ghc 7.8.3 or lator)
-* `random-shuffle` package
-
-    ex.
-
-    ```shell
-    $ cabal install random-shuffle
-    ```
+* Haskell compiler(ghc 7.8.4 or lator)
+* The `random-shuffle` package 
+    https://hackage.haskell.org/package/random-shuffle
 
 ## Install and try
 
 Use stack: 
 
+    ```bash
     $ stack update && stack install java-poker
     $ hash -r
-    $ java-poker
+    $ java-poker-simple
+    ```
 
 Or use cabal:
 
+    ```bash
     $ cabal update && cabal install java-poker
     $ hash -r
-    $ java-poker
+    $ java-poker-simple
+    ```
 
 Or use stack and build master branch in git: 
 
+    ```bash
     $ git clone https://github.com/tobynet/java-poker.git
     $ cd java-poker
-    $ stack build && stack exec java-poker-simple
+    $ stack build
+    $ stack exec java-poker-simple
+    ```
 
 
