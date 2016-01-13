@@ -39,4 +39,4 @@ install:
 script:
   - stack build --no-terminal
   - stack runghc app/Main.hs
-  - echo '123\ny\nn\n' | stack runghc app/Simple.hs
+  - echo "123\\ny\\nn\\n" | stack runghc app/Simple.hs
