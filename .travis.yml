@@ -1,0 +1,51 @@
+# ref. http://docs.haskellstack.org/en/stable/travis_ci.html
+sudo: false
+
+matrix:
+  include:
+    - env: GHCVER=7.8.4 STACK_YAML=stack-7.8.yaml
+    addons:
+      apt:
+        sources:
+        - hvr-ghc
+        packages:
+        - ghc-7.8.4
+  - env: GHCVER=7.10.3 STACK_YAML=stack.yaml
+    addons:
+      apt:
+        sources:
+        - hvr-ghc
+        packages:
+        - ghc-7.10.3
+  - env: GHCVER=head STACK_YAML=stack.yaml
+    addons:
+      apt:
+        sources:
+        - hvr-ghc
+        packages:
+        - ghc-head
+  allow_failures:
+    - env: GHCVER=head STACK_YAML=stack.yaml
+
+before_install:
+  # ghc
+  - export PATH=/opt/ghc/$GHCVER/bin:$PATH
+# Caching so the next build will be fast too.
+cache:
+  directories:
+  - $HOME/.stack
+
+before_install:
+  - export PATH=/opt/ghc/$GHCVER/bin:$PATH
+  # Download and unpack the stack executable
+  - mkdir -p ~/.local/bin
+  - export PATH=$HOME/.local/bin:$PATH
+  - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+
+install:
+  - stack setup --no-terminal --skip-ghc-check
+
+script:
+  - stack build --no-terminal --skip-ghc-check
+  - stack runghc --skip-ghc-check app/Main.hs
+  - echo "123\ny\nn\n" | stack runghc --skip-ghc-check app/Simple.hs
