@@ -3,7 +3,8 @@
 * For `Syakyo`, refer to https://en.wikipedia.org/wiki/Sutra_copying
 * For `Poker in Haskell`, refer to http://tune.hateblo.jp/entry/2015/05/12/023112
 
-[![Build status](https://ci.appveyor.com/api/projects/status/drorc8em7adst8oq?svg=true)](https://ci.appveyor.com/project/tobynet/java-poker)
+[![Build Status](https://travis-ci.org/tobynet/java-poker.svg?branch=master)](https://travis-ci.org/tobynet/java-poker)
+[![Build status](https://ci.appveyor.com/api/projects/status/drorc8em7adst8oq?svg=true&passingText=Windows%20READY)](https://ci.appveyor.com/project/tobynet/java-poker)
 
 
 ## Requirements
