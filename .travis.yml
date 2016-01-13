@@ -17,15 +17,6 @@ matrix:
         - hvr-ghc
         packages:
         - ghc-7.10.3
-  - env: GHCVER=head STACK_YAML=stack.yaml
-    addons:
-      apt:
-        sources:
-        - hvr-ghc
-        packages:
-        - ghc-head
-  allow_failures:
-    - env: GHCVER=head STACK_YAML=stack.yaml
 
 before_install:
   # ghc
@@ -43,9 +34,9 @@ before_install:
   - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 
 install:
-  - stack setup --no-terminal --skip-ghc-check
+  - stack setup --no-terminal
 
 script:
-  - stack build --no-terminal --skip-ghc-check
-  - stack runghc --skip-ghc-check app/Main.hs
-  - echo "123\ny\nn\n" | stack runghc --skip-ghc-check app/Simple.hs
+  - stack build --no-terminal
+  - stack runghc app/Main.hs
+  - echo "123\ny\nn\n" | stack runghc app/Simple.hs
