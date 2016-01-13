@@ -16,4 +16,5 @@ test_script:
 - stack setup > nul
 - echo "" | stack --no-terminal build
 - stack runghc app/Main.hs
-- echo "123\\ny\\nn\\n" | stack runghc app/Simple.hs
+- echo -en "123\\ny\\nn\\n" | stack runghc app/Simple.hs
+- stack runghc app/Simple.hs <<< "123" <<< "y" <<< "n"
