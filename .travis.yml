@@ -1,4 +1,5 @@
 # ref. http://docs.haskellstack.org/en/stable/travis_ci.html
+language: haskell
 sudo: false
 
 matrix:
