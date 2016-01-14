@@ -17,5 +17,6 @@ test_script:
 - stack ghc -- --version
 - echo "" | stack --no-terminal build
 - stack runghc app/Main.hs
-- ps: Write-Host "123`ny`nn`n" | & stack runghc app/Simple.hs
+- ps: Write-Host $PWD
+- ps: Write-Host "123`ny`nn`n" | stack.exe runghc app/Simple.hs
 
