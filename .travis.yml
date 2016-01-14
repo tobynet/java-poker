@@ -37,6 +37,7 @@ install:
   - stack setup --no-terminal
 
 script:
+  - stack ghc -- --version
   - stack build --no-terminal
   - stack runghc app/Main.hs
   - echo -en "123\\ny\\nn\\n" | stack runghc app/Simple.hs
