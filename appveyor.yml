@@ -18,5 +18,8 @@ test_script:
 - echo "" | stack --no-terminal build
 - stack runghc app/Main.hs
 - ps: Write-Host $PWD
+- ps: Get-ChildItem
+- ps: stack runghc app/Main.hs
+- ps: stack.exe runghc app/Main.hs
 - ps: Write-Host "123`ny`nn`n" | stack.exe runghc app/Simple.hs
 
