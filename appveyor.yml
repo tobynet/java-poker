@@ -17,4 +17,4 @@ test_script:
 - stack ghc -- --version
 - echo "" | stack --no-terminal build
 - stack exec java-poker-helloworld
-- ps: Write-Host "123`ny`nn`n" | ./stack exec java-poker
+- ps: Write-Output "123`ny`nn`n" | ./stack exec java-poker
