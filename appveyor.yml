@@ -19,7 +19,7 @@ test_script:
 - stack exec java-poker-helloworld
 - ps: Write-Host $PWD
 - ps: Get-ChildItem
-- ps: stack exec java-poker-helloworld
-- ps: stack.exe exec java-poker-helloworld
-- ps: stack exec java-poker
-- ps: Write-Host "123`ny`nn`n" | stack exec java-poker
+- ps: ./stack.exe exec java-poker-helloworld
+- ps: & ./stack.exe exec java-poker-helloworld
+- ps: ./stack.exe exec java-poker
+- ps: Write-Host "123`ny`nn`n" | ,/stack exec java-poker
