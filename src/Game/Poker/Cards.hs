@@ -114,6 +114,5 @@ cardNumber (Card num _) = num
 -- 
 -- >>> cardStrength . head $ allCards
 -- 2
-cardStrength :: Card -> Int
-cardStrength (Card n _) = n
+cardStrength = cardNumber
 
